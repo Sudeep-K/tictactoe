@@ -2,13 +2,6 @@
 const Gameboard = (function() {
     let player_turn = "player_1";
 
-    /* stores how many times have the game been draw */
-    draw = 0;
-
-    /* array of places filled up by the players */
-    let global_places = [];
-    let refer_places = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
-
     /* horizontal arrays of places in gameboard
      * to check whether there is win move or not? 
      */
@@ -36,7 +29,7 @@ const Gameboard = (function() {
          * inside the gameboard is legal or not??
          */
 
-        if (global_places.includes(playerInput)) {
+        if (score_board.global_places.includes(playerInput)) {
             return true;
         }
         else {
@@ -44,14 +37,9 @@ const Gameboard = (function() {
         }
     }
 
-    const contains = (array1,array2) => {
-        for (let i = 0; i < array1.length; i++) {
-            let index = array1.indexOf(array2[i]);
-            if (index == -1) {
-                return false;
-            }
-        }
-        return true;
+    const contains = (array1, array2) => {
+        let result = array1.every(val => array2.includes(val));
+        return result;
     }
 
     const hasWon = (player_x) => {
@@ -91,15 +79,6 @@ const Gameboard = (function() {
         }
     }
 
-    const isDraw = (a, b) => {
-        return a.length === b.length &&
-        a.every((val, index) => val === b[index]);
-    }
-
-    const gameWon = () => {
-        /* displays gamewon and adds to score of either player */
-    }
-
     const displayScores = () => {
         /* displays the score to the window */
         let player_1Score = document.querySelector(".player-x .value");
@@ -108,12 +87,11 @@ const Gameboard = (function() {
 
         player_1Score.textContent = player_1.player_score;
         player_2Score.textContent = player_2.player_score;
-        drawScore.textContent = draw;
+        drawScore.textContent = score_board.drawTimes;
     }
 
     const clearBoard = () => {
         /* clears the board after each match is completed */
-        global_places = [];
         player_1.playerChoice = [];
         player_2.playerChoice = [];
         let image_childNodes = document.querySelectorAll(".box img");
@@ -126,13 +104,20 @@ const Gameboard = (function() {
         hasWon,
         player_turn: player_turn,
         isLegal: isLegal,
-        global_places: global_places,
         displayScores,
         clearBoard,
-        isDraw,
-        refer_places,
-        draw,
     };
+}) ();
+
+/* score board module */
+const score_board = (function() {
+    let global_places = [];
+    let drawTimes = 0;
+
+    return {
+        global_places,
+        drawTimes,
+    }
 }) ();
 
 /* Creating an object for player */
@@ -182,19 +167,21 @@ boxes.forEach(function (box) {
                 
                 /* if the move is legal then push the choice to array */
                 player_1.playerChoice.push(box.id);
-                Gameboard.global_places.push(box.id);
-
-                if (Gameboard.isDraw(Gameboard.global_places, Gameboard.refer_places)) {
-                    /* checks if the game is draw */
-                    Gameboard.draw += 1;
-                    Gameboard.displayScores();
-                    Gameboard.clearBoard();
-                }
-
+                score_board.global_places.push(box.id);
+                
                 /* checks if the player has won the game */
-                if (!Gameboard.hasWon(player_1.playerChoice)) {
+                if (!Gameboard.hasWon(player_1.playerChoice) && score_board.global_places.length < 9) {
                     player_1.drawonBox(box);
                     Gameboard.player_turn = 'player_2';
+                }
+
+                else if (score_board.global_places.length >= 9) {
+                    Gameboard.draw += 1;
+                    Gameboard.displayScores();
+                    player_1.drawonBox(box);
+                    alert("Game was draw!!");
+                    Gameboard.clearBoard();
+                    score_board.global_places = [];
                 }
                 else {
                     /* display gamewon screen */
@@ -203,36 +190,32 @@ boxes.forEach(function (box) {
                     player_1.player_score += 1;
                     Gameboard.displayScores();
                     Gameboard.clearBoard();
+                    score_board.global_places = [];
                 }
             }
         }
         else if (Gameboard.player_turn == "player_2") {
             
             Gameboard.displayScores();
-            if (Gameboard.isDraw(Gameboard.global_places, Gameboard.refer_places)) {
-                /* checks if the game is draw */
-                Gameboard.draw += 1;
-                Gameboard.displayScores();
-                Gameboard.clearBoard();
-            }
 
             if (!Gameboard.isLegal(box.id)) {
                 
                 /* if the move is legal then push the choice to array */
                 player_2.playerChoice.push(box.id);
-                Gameboard.global_places.push(box.id);
-
-                if (Gameboard.isDraw(Gameboard.global_places, Gameboard.refer_places)) {
-                    /* checks if the game is draw */
-                    Gameboard.draw += 1;
-                    Gameboard.displayScores();
-                    Gameboard.clearBoard();
-                }
+                score_board.global_places.push(box.id);
 
                 /* checks if the player has won the game */
-                if (!Gameboard.hasWon(player_2.playerChoice)) {
+                if (!Gameboard.hasWon(player_2.playerChoice) && score_board.global_places.length < 9) {
                     player_2.drawonBox(box);
                     Gameboard.player_turn = 'player_1';
+                }
+                else if (score_board.global_places.length >= 9) {
+                    Gameboard.draw += 1;
+                    Gameboard.displayScores();
+                    player_2.drawonBox(box);
+                    alert("Game was draw!!");
+                    Gameboard.clearBoard();
+                    score_board.global_places = [];
                 }
                 else {
                     /* display gamewon screen */
@@ -241,6 +224,7 @@ boxes.forEach(function (box) {
                     player_2.player_score += 1;
                     Gameboard.displayScores();
                     Gameboard.clearBoard();
+                    score_board.global_places = [];
                 }
             }
         }
