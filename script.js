@@ -2,8 +2,12 @@
 const Gameboard = (function() {
     let player_turn = "player_1";
 
+    /* stores how many times have the game been draw */
+    draw = 0;
+
     /* array of places filled up by the players */
     let global_places = [];
+    let refer_places = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
     /* horizontal arrays of places in gameboard
      * to check whether there is win move or not? 
@@ -87,22 +91,55 @@ const Gameboard = (function() {
         }
     }
 
+    const isDraw = (a, b) => {
+        return a.length === b.length &&
+        a.every((val, index) => val === b[index]);
+    }
+
     const gameWon = () => {
         /* displays gamewon and adds to score of either player */
+    }
+
+    const displayScores = () => {
+        /* displays the score to the window */
+        let player_1Score = document.querySelector(".player-x .value");
+        let player_2Score = document.querySelector(".player-o .value");
+        let drawScore = document.querySelector(".draw .value");
+
+        player_1Score.textContent = player_1.player_score;
+        player_2Score.textContent = player_2.player_score;
+        drawScore.textContent = draw;
+    }
+
+    const clearBoard = () => {
+        /* clears the board after each match is completed */
+        global_places = [];
+        player_1.playerChoice = [];
+        player_2.playerChoice = [];
+        let image_childNodes = document.querySelectorAll(".box img");
+        image_childNodes.forEach(function(child_img) {
+            child_img.parentNode.removeChild(child_img);
+        });
     }
 
     return {
         hasWon,
         player_turn: player_turn,
         isLegal: isLegal,
-        global_places: global_places
+        global_places: global_places,
+        displayScores,
+        clearBoard,
+        isDraw,
+        refer_places,
+        draw,
     };
 }) ();
 
 /* Creating an object for player */
 const Player = () => {
     let playerChoice = [];
-    const drawonBox = () => {
+    let player_score = 0;
+    const drawonBox = (box) => {
         let childNode = document.createElement("img");
 
         if (Gameboard.player_turn == 'player_1') {
@@ -115,17 +152,10 @@ const Player = () => {
         childNode.setAttribute('height', '100px');
         childNode.setAttribute('width', '100px');
         box.appendChild(childNode);
-        
-
-        if (Gameboard.player_turn == 'player_1') {
-            Gameboard.player_turn = 'player_2';
-        }
-        else {
-            Gameboard.player_turn = 'player_1';
-        }
     }
     return {
         playerChoice,
+        player_score,
         drawonBox,
     }
 }
@@ -145,6 +175,8 @@ boxes.forEach(function (box) {
          */
 
         if (Gameboard.player_turn == "player_1") {
+
+            Gameboard.displayScores();
             
             if (!Gameboard.isLegal(box.id)) {
                 
@@ -152,54 +184,65 @@ boxes.forEach(function (box) {
                 player_1.playerChoice.push(box.id);
                 Gameboard.global_places.push(box.id);
 
+                if (Gameboard.isDraw(Gameboard.global_places, Gameboard.refer_places)) {
+                    /* checks if the game is draw */
+                    Gameboard.draw += 1;
+                    Gameboard.displayScores();
+                    Gameboard.clearBoard();
+                }
+
                 /* checks if the player has won the game */
                 if (!Gameboard.hasWon(player_1.playerChoice)) {
-                    let childNode = document.createElement("img");
-                    childNode.setAttribute('src', './cross.png');
-                    childNode.setAttribute('height', '100px');
-                    childNode.setAttribute('width', '100px');
-                    box.appendChild(childNode);
-                    
+                    player_1.drawonBox(box);
+                    Gameboard.player_turn = 'player_2';
                 }
                 else {
                     /* display gamewon screen */
-                    let childNode = document.createElement("img");
-                    childNode.setAttribute('src', './cross.png');
-                    childNode.setAttribute('height', '100px');
-                    childNode.setAttribute('width', '100px');
-                    box.appendChild(childNode);
+                    player_1.drawonBox(box);
                     alert(`Gamewon by ${Gameboard.player_turn}!!`);
+                    player_1.player_score += 1;
+                    Gameboard.displayScores();
+                    Gameboard.clearBoard();
                 }
             }
         }
         else if (Gameboard.player_turn == "player_2") {
             
+            Gameboard.displayScores();
+            if (Gameboard.isDraw(Gameboard.global_places, Gameboard.refer_places)) {
+                /* checks if the game is draw */
+                Gameboard.draw += 1;
+                Gameboard.displayScores();
+                Gameboard.clearBoard();
+            }
+
             if (!Gameboard.isLegal(box.id)) {
                 
                 /* if the move is legal then push the choice to array */
                 player_2.playerChoice.push(box.id);
                 Gameboard.global_places.push(box.id);
 
+                if (Gameboard.isDraw(Gameboard.global_places, Gameboard.refer_places)) {
+                    /* checks if the game is draw */
+                    Gameboard.draw += 1;
+                    Gameboard.displayScores();
+                    Gameboard.clearBoard();
+                }
+
                 /* checks if the player has won the game */
                 if (!Gameboard.hasWon(player_2.playerChoice)) {
-                    let childNode = document.createElement("img");
-                    childNode.setAttribute('src', './circle.png');
-                    childNode.setAttribute('height', '100px');
-                    childNode.setAttribute('width', '100px');
-                    box.appendChild(childNode);
+                    player_2.drawonBox(box);
                     Gameboard.player_turn = 'player_1';
                 }
                 else {
                     /* display gamewon screen */
-                    let childNode = document.createElement("img");
-                    childNode.setAttribute('src', './circle.png');
-                    childNode.setAttribute('height', '100px');
-                    childNode.setAttribute('width', '100px');
-                    box.appendChild(childNode);
+                    player_2.drawonBox(box);
                     alert(`Gamewon by ${Gameboard.player_turn}!!`);
+                    player_2.player_score += 1;
+                    Gameboard.displayScores();
+                    Gameboard.clearBoard();
                 }
             }
-
         }
     });
 });

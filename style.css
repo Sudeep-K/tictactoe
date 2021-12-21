@@ -7,11 +7,45 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    font-family: Helvetica, sans-serif;
+}
+
+/* horizontal tictactoe text */
+.horiz-text {
+    margin-top: 400px;
+    margin-right: 200px;
+    margin-left: -50px;
+    color: white;
+    font-style: italic;
+}
+
+/* vertical tictactoe text */
+.verti-text {
+    transform: rotate(-90deg);
+    color: white;
+    font-style: italic;
+    margin-top: -400px;
+    margin-left: 200px;
+}
+
+/* player scores section */
+.playerscores {
+    display: flex;
+    flex-direction: column;
+    margin-top: 100px;
+    border-left: 2px solid yellow;
+    padding-left: 20px;
+}
+
+.player-x, .player-o, .draw {
+    display: flex;
+    gap: 10px;
 }
 
 /* gameboard */
 .gameboard {
     margin-top: 150px;
+    margin-left: 150px;
     width: 350px;
     height: 350px;
     border: 5px #85b396 solid;
